@@ -12,23 +12,25 @@ body{font-family:'Hiragino Kaku Gothic ProN','BIZ UDPGothic',sans-serif;backgrou
 .hero-icon{width:56px;height:56px;background:#f5f5f0;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:24px;}
 .hero h1{font-size:22px;font-weight:600;color:#1a1a1a;margin:0 0 8px;}
 .hero p{font-size:13px;color:#888;line-height:1.7;margin:0;}
-.label{font-size:11px;font-weight:600;color:#999;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;}
+.label{font-size:11px;font-weight:600;color:#999;letter-spacing:0.06em;margin-bottom:8px;}
 .input-row{display:flex;gap:8px;margin-bottom:1.5rem;}
 .input-row input{flex:1;border:1px solid #e5e5e5;border-radius:10px;padding:10px 14px;font-size:14px;color:#1a1a1a;outline:none;font-family:inherit;background:#fff;}
 .input-row input:focus{border-color:#aaa;}
-.input-row button{padding:10px 18px;background:#1a1a1a;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
-.input-row button:active{background:#333;}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.5rem;}
+.add-btn{padding:10px 18px;background:#1a1a1a;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.add-btn:active{background:#333;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.5rem;min-height:32px;}
 .chip{font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;background:#fff;border:1px solid #e5e5e5;color:#666;}
 .chip:hover{background:#f5f5f5;}
+.chip-custom{background:#fff8f0;border-color:#ffd9a0;color:#8a5a2a;}
+.chip-custom:hover{background:#fff0e0;}
+.chip-custom .del{background:none;border:none;cursor:pointer;color:#c09060;font-size:12px;padding:0;margin-left:3px;}
 .tags{display:flex;flex-wrap:wrap;gap:6px;min-height:44px;padding:10px;background:#fff;border-radius:12px;border:1px solid #e5e5e5;margin-bottom:1.5rem;}
 .tag{display:flex;align-items:center;gap:4px;background:#f5f5f0;border-radius:20px;padding:5px 12px;font-size:13px;color:#1a1a1a;}
-.tag button{background:none;border:none;cursor:pointer;color:#999;padding:0;font-size:16px;line-height:1;display:flex;align-items:center;}
+.tag button{background:none;border:none;cursor:pointer;color:#999;padding:0;font-size:16px;line-height:1;}
 .empty{font-size:13px;color:#ccc;font-style:italic;padding:2px 0;}
 .divider{height:1px;background:#f0f0f0;margin:1.5rem 0;}
-.search-btn{width:100%;padding:14px;font-size:15px;font-weight:600;background:#ff6633;color:#fff;border:none;border-radius:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;}
+.search-btn{width:100%;padding:14px;font-size:15px;font-weight:600;background:#ff6633;color:#fff;border:none;border-radius:12px;cursor:pointer;font-family:inherit;}
 .search-btn:hover{background:#e55522;}
-.search-btn:active{background:#cc4411;}
 .hint{font-size:12px;color:#bbb;text-align:center;margin-top:10px;}
 .footer{text-align:center;margin-top:3rem;font-size:11px;color:#ccc;}
 </style>
@@ -44,11 +46,11 @@ body{font-family:'Hiragino Kaku Gothic ProN','BIZ UDPGothic',sans-serif;backgrou
   <div class="label">食材を入力</div>
   <div class="input-row">
     <input type="text" id="fi" placeholder="例：鶏肉、たまご..." onkeydown="if(event.key==='Enter')add()">
-    <button onclick="add()">＋ 追加</button>
+    <button class="add-btn" onclick="add()">＋ 追加</button>
   </div>
 
-  <div class="label">よく使う食材</div>
-  <div class="chips">
+  <div class="label">よく使う食材（タップで選択 / 追加すると登録されます）</div>
+  <div class="chips" id="myChips">
     <span class="chip" onclick="quick('鶏肉')">鶏肉</span>
     <span class="chip" onclick="quick('豚肉')">豚肉</span>
     <span class="chip" onclick="quick('たまご')">たまご</span>
@@ -57,8 +59,6 @@ body{font-family:'Hiragino Kaku Gothic ProN','BIZ UDPGothic',sans-serif;backgrou
     <span class="chip" onclick="quick('玉ねぎ')">玉ねぎ</span>
     <span class="chip" onclick="quick('にんじん')">にんじん</span>
     <span class="chip" onclick="quick('キャベツ')">キャベツ</span>
-    <span class="chip" onclick="quick('豚バラ')">豚バラ</span>
-    <span class="chip" onclick="quick('ほうれん草')">ほうれん草</span>
     <span class="chip" onclick="quick('もやし')">もやし</span>
     <span class="chip" onclick="quick('なす')">なす</span>
   </div>
@@ -68,32 +68,75 @@ body{font-family:'Hiragino Kaku Gothic ProN','BIZ UDPGothic',sans-serif;backgrou
 
   <div class="divider"></div>
 
-  <button class="search-btn" onclick="search()">
-    🔍 クックパッドでレシピを探す
-  </button>
+  <button class="search-btn" onclick="search()">🔍 クックパッドでレシピを探す</button>
   <div class="hint">クックパッドの検索結果ページが開きます</div>
 
   <div class="footer">すこらく</div>
 </div>
 
 <script>
+var defaultChips=['鶏肉','豚肉','たまご','豆腐','じゃがいも','玉ねぎ','にんじん','キャベツ','もやし','なす'];
 var foods=[];
+var myChipList=JSON.parse(localStorage.getItem('myChipList')||JSON.stringify(defaultChips));
+
+function saveChips(){
+  localStorage.setItem('myChipList',JSON.stringify(myChipList));
+}
+
 function add(){
   var v=document.getElementById('fi').value.trim();
   if(!v)return;
-  v.split(/[、,，\s]+/).forEach(function(f){if(f&&!foods.includes(f))foods.push(f);});
+  // 「、」「,」「スペース」で分割して1つずつ追加
+  var list=v.split(/[、,，\s　]+/).filter(function(f){return f.trim()!='';});
+  var updated=false;
+  list.forEach(function(f){
+    f=f.trim();
+    if(!f)return;
+    if(!foods.includes(f)){foods.push(f);updated=true;}
+    if(!myChipList.includes(f)){myChipList.push(f);saveChips();renderMyChips();}
+  });
+  if(updated)render();
   document.getElementById('fi').value='';
+}
+
+function quick(f){
+  if(!foods.includes(f)){foods.push(f);render();}
+}
+
+function removeFood(f){
+  foods=foods.filter(function(x){return x!==f;});
   render();
 }
-function quick(f){if(!foods.includes(f)){foods.push(f);render();}}
-function remove(f){foods=foods.filter(function(x){return x!==f;});render();}
+
+function removeChip(f){
+  myChipList=myChipList.filter(function(x){return x!==f;});
+  saveChips();
+  renderMyChips();
+}
+
 function render(){
   var el=document.getElementById('tags');
   if(!foods.length){el.innerHTML='<span class="empty">食材を追加してね</span>';return;}
   el.innerHTML=foods.map(function(f){
-    return '<span class="tag">'+f+'<button onclick="remove(\''+f+'\')" aria-label="削除">×</button></span>';
+    return '<span class="tag">'+f+'<button onclick="removeFood(\''+f+'\')" aria-label="削除">×</button></span>';
   }).join('');
 }
+
+function renderMyChips(){
+  var el=document.getElementById('myChips');
+  var defaultList=['鶏肉','豚肉','たまご','豆腐','じゃがいも','玉ねぎ','にんじん','キャベツ','もやし','なす'];
+  el.innerHTML=myChipList.map(function(f){
+    var isDefault=defaultList.includes(f);
+    if(isDefault){
+      return '<span class="chip" onclick="quick(\''+f+'\')">'+f+'</span>';
+    } else {
+      return '<span class="chip chip-custom" onclick="quick(\''+f+'\')">'+f+'<button class="del" onclick="event.stopPropagation();removeChip(\''+f+'\')" aria-label="削除">×</button></span>';
+    }
+  }).join('');
+}
+
+renderMyChips();
+
 function search(){
   if(!foods.length){alert('食材を追加してね！');return;}
   var q=encodeURIComponent(foods.join(' '));
